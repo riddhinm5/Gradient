@@ -1,0 +1,285 @@
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Inkling Gradient Challenge</title>
+<style type="text/css" media="screen">
+* {
+	margin: 0;
+}
+
+#gradient {
+	position: relative;
+	margin: 0 auto;
+	width: 400px;
+	height: 400px;
+}
+
+#gradient div {
+	position: absolute;
+}
+</style>
+</head>
+<body>
+
+	<div id="gradient"></div>
+	<!-- <input type="button" id="initGradient" value="draw" onclick="draw()">  -->
+	<form id="constructorValues" onSubmit="initObject(this.form)">
+		<h3><center>initialize the gradient object:</h3></center>
+<br />
+<center>
+<table width="746" height="100" border="0" align="center">
+<tr>
+		    <td width="603" align="left" valign="top" bgcolor="#666666">Enter Stop Values Seperated by Commas to draw:
+              <input type="text" id="step1" size="20">
+            <input type="button" value="submit stop values" onClick="initObject(this.form)" size="20"></td>
+		    <td width="114" align="left" valign="top" bgcolor="#999999"><blockquote>
+		      <blockquote>
+		        <p>
+		          <input type="button" onClick="gradient.clear()" value="clear Gradient">
+		        </p>
+	          </blockquote>
+	        </blockquote></td>
+	      </tr>
+		  <tr>
+		    <td bgcolor="#666666">Enter Stop Values Seperated by Commas to push:
+            <input type="text" id="step2" size="20">
+            <input type="button" onClick="gradient.push(step2.value)" value="Push"></td>
+		    <td bgcolor="#999999"><span>
+	        <input type="button" onClick="gradient.pop()" value="Pop" size="25">
+		    </span></td>
+	      </tr>
+		  <tr>
+		    <td bgcolor="#666666">Values Seperated by Commas to un-shift:
+              <input type="text" id="step3" size="20">
+              <input type="button" onClick="gradient.unshift(step3.value)" value="unshift"></td>
+		    <td bgcolor="#999999"><input type="button" onClick="gradient.shift()" value="shift"></td>
+	      </tr>
+		  <tr>
+		    <td bgcolor="#666666"><input type="button" onClick="gradient.reverse()" value="reverse">
+	        <input type="button" onClick="gradient.sort(function(stopVals){return stopVals.sort();});" value="Callback Sort">
+	        <input type="button" onClick="gradient.sort()" value="Normal Sort"></td>
+		    <td bgcolor="#999999"><input type="button" onClick="gradient.draw()" value="re-draw Gradient"></td>
+	      </tr>
+		  <tr>
+		    <td bgcolor="#666666">&nbsp;</td>
+		    <td bgcolor="#999999"><input type="button" onClick="gradient.map(function(stop){return Math.min(255, stop + 100);});" value="Map"></td>
+	      </tr>
+	  </table>
+      </center>
+<br />
+
+		<p><br />
+		  <br /> 
+				<br /><br /> 
+				
+		</p>
+
+
+	</form>
+
+	<!-- <input type="button" onclick="alerts()" value="debug">  -->
+
+	<script type="text/javascript" charset="utf-8">
+		// YOUR CODE GOES HERE.
+
+		function gradient(element, stopVals) {
+			// defining all member functions
+			this.element = element;
+			this.stopVals = stopVals;
+			this.draw = draw;
+			this.clear = clear;
+			this.push = push;
+			this.shift = shift;
+			this.map = map;
+			this.pop = pop;
+			this.unshift = unshift;
+			this.reverse = reverse;
+			this.sort = sort;
+		}
+
+		function initObject(form) {
+
+			var element = document.getElementById("gradient");
+			var stop = form.step1.value;
+			var stopVals = stop.split(",");
+			gradient = new gradient(element, stopVals);
+			gradient.draw();
+		}
+
+		function reDraw() {
+
+		}
+
+		function clear() {
+			this.element.innerHTML = "";
+		}
+
+		function draw() {
+			
+			var el = this.element;
+			var st1 = parseInt(this.stopVals[0]);
+			var alVals = this.stopVals;
+			var k = 0;
+			var totalSteps = 0;
+			for ( var i = 0; i < alVals.length - 1; i++) {
+				totalSteps = totalSteps
+						+ Math.abs(parseInt(alVals[i])
+								- parseInt(alVals[i + 1]));
+			}
+
+			var backgroundColor;
+			var radius = el.offsetWidth;
+			var move = 0;
+			var height = radius;
+			var rgbHex = st1.toString();
+			var moveBy;
+			var colorChange;
+			var indexInc = Math.max(height / totalSteps, totalSteps / height);
+			var maxIndex = Math.max(height, totalSteps);
+			// to ensure the gradient distribution is constant choosing wheather to increase the size of the step taken for the next color or change the color 
+			// to a higher value eg to decrease the next bordder radius value by 2 if the total number of steps needed to reach the target color is less than the 
+			// radius of the largest div border radius or to increase the color from 000000 to 030303 instead of 010101 if the number of steps required is more than
+			// the radius
+			if (parseInt(height) < parseInt(totalSteps)) {
+				moveBy = 1;
+				colorChange = totalSteps / height;
+
+			}
+
+			else {
+				moveBy = height / totalSteps;
+				colorChange = 1;
+
+			}
+
+			var i = 1;
+			var toPut = "";
+
+			for ( var i = 0; i <= maxIndex; (++i)) {
+				var debug = "gradient" + i;
+				toPut += " <div id = "+debug+"></div>";
+			}
+
+			el.innerHTML = toPut;
+			var colorValIndex = 1;
+			var currColor = alVals[0];
+			
+			for ( var i = 0; i < maxIndex; i++) {
+				// to change current color value based on the target color value
+				if (alVals[colorValIndex - 1] < alVals[colorValIndex]) {
+					if (Math.round(currColor * colorChange) >= alVals[colorValIndex]) {
+						colorValIndex++;
+					}
+				} 
+				else {
+					if (Math.round(currColor * colorChange) <= alVals[colorValIndex]) {
+						colorValIndex++;
+					}
+				}
+				
+				rgbHex = decimalToHexString(Math.round(currColor * colorChange));
+				
+				if (rgbHex.length < 2)
+					rgbHex = "0" + rgbHex;
+				
+				backgroundColor = rgbHex + rgbHex + rgbHex;
+				// assigns values to heigth, width, radius, and color to the div
+				document.getElementById("gradient" + i).style.width = radius + "px";
+				document.getElementById("gradient" + i).style.height = radius + "px";
+				document.getElementById("gradient" + i).style.borderRadius = radius + "px";
+				document.getElementById("gradient" + i).style.backgroundColor = backgroundColor.toString();
+				document.getElementById("gradient" + i).style.left = move + "px";
+				document.getElementById("gradient" + i).style.top = move + "px";
+				move = (height - (radius - moveBy)) / 2;
+				radius = parseInt(radius);
+				radius -= moveBy;
+				
+				if (alVals[colorValIndex - 1] < alVals[colorValIndex]) {
+					currColor++;
+				} 
+				
+				else {
+					currColor--;
+				}
+			}
+		}
+
+		function push(push) {
+			var el = this.element;
+			var pushVals = push.split(",");
+			// sending all the stop values including those to be pushed
+			var alVals = this.stopVals.concat(pushVals);
+
+			this.stopVals = alVals;
+			gradient.draw();
+		}
+
+		function pop() {
+			var alVals = this.stopVals;
+			var removed = alVals.pop();
+			//alert(removed);
+			this.stopVals = alVals;
+			//alert(this.stopVals);
+			gradient.draw();
+
+		}
+
+		function shift() {
+			var alVals = this.stopVals;
+			var removed = alVals.splice(0, 1);
+			//alert(alVals);
+			this.stopVals = alVals;
+			gradient.draw();
+		}
+
+		function unshift(unShift) {
+			var el = this.element;
+			var unShiftVals = unShift.split(",");
+			alVals = unShiftVals.concat(this.stopVals);
+			//alert(alVals);
+			this.stopVals = alVals;
+			gradient.draw();
+		}
+
+		function map(callback){
+			var alVals = [];
+			for(i= 0 ; i < this.stopVals.length; i++){
+				alVals[alVals.length] = callback(this.stopVals[i]);
+			}
+			//alert(alVals);
+			this.stopVals = alVals;
+			gradient.draw();
+		}
+		
+		function sort(callback){
+			var alVals = [];
+			// Checking if callback is undefined ie the normal sort gradient.sort() is called or if the callback sort is called
+			if(callback !== undefined){
+				//alert("in");
+				callback(this.stopVals);
+			}
+			else{
+				this.stopVals.sort();
+			}
+			gradient.draw();
+		
+		}
+		
+		function reverse(){
+			var el = this.element;
+			this.stopVals.reverse();
+			
+			gradient.draw();
+		}
+		
+		function decimalToHexString(decToHex) {
+			if (decToHex < 0) {
+				decToHex = 0xFFFFFFFF + number + 1;
+			}
+
+			return decToHex.toString(16).toUpperCase();
+		}
+	</script>
+
+</body>
+</html>
